@@ -1,5 +1,5 @@
 # Master List from Google Sheets
- Create an auto-updating master list by pulling data from multiple tabs on a Google sheets workbook. 
+ Create an auto-updating master list by pulling data from multiple tabs on a Google sheets workbook written in Javascript. 
 
  The variable sheetNamesToImport represents the names of the tabs for the source data. The array that is defined for this code contain columns A through D and rows 4 through 19. This should be edited to make the desired array. Note that all the data for each tab needs to be formatted into the same array for this code to work. 
 
