@@ -1,0 +1,43 @@
+function createMasterList() {
+  // Define the names of the tabs to import data from
+  var sheetNamesToImport = [
+    "Sun 10a LWR", "Sun 10a SWR", "Sun 12:30p HB", "Sun 3p LWR", "Mon 6p HB", "Mon 6p LWR", "Mon 6p SWR",
+    "Mon 8:30p LWR", "Mon 8:30p SWR", "Tue 10a SWR", "Tue 6p LWR", "Tue Interm. 6:30p SWR", "Tue 8:30p LWR",
+    "Tue 7p HB", "Wed 10a LWR", "Wed 12:30p LWR", "Wed 6p LWR", "Wed 8:30p LWR", "Wed 5:30p SWR", "Wed 8p SWR",
+    "Wed HB Intensive 6pm", "Wed 6p Casting", "Thu 6p LWR", "Thu 8:30p LWR", "Thu 6p HB", "Thu Adv 6p SWR",
+    "Fri 12:30p LWR", "Fri 5:30p LWR", "Fri 8p LWR", "Fri 5:30p HB Inten.", "Fri 5:30p Casting", "Sat 10a LWR",
+    "Sat 12:30a LWR", "Sat 3p LWR","TEACHER SHELVES","Sat Teen 2:30p SWR", "Sat Kids 12p SWR", "Fri 5:30p HB Inten.","Community Artist Shelves"
+  ];
+
+  // Get the active spreadsheet
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Create the "Master List" tab or get it if it already exists
+  var masterListSheet = spreadsheet.getSheetByName("Master List") || spreadsheet.insertSheet("Master List");
+
+  // Define the starting row to append data in the "Master List"
+  var startRow = masterListSheet.getLastRow() + 1;
+
+  // Loop through each tab to import data
+  for (var i = 0; i < sheetNamesToImport.length; i++) {
+    var sourceSheet = spreadsheet.getSheetByName(sheetNamesToImport[i]);
+    if (sourceSheet) {
+      // Define the range to import (A4:D20)
+      var rangeToImport = sourceSheet.getRange("A4:D19").getValues();
+      
+      // Apply the INDEX function to the imported data
+      for (var row = 0; row < rangeToImport.length; row++) {
+        for (var col = 0; col < rangeToImport[row].length; col++) {
+          var indexFormula = "=INDEX('" + sheetNamesToImport[i] + "'!$A$4:$D$19," + (row + 1) + "," + (col + 1) + ")";
+          rangeToImport[row][col] = indexFormula;
+        }
+      }
+      
+      // Set the imported and indexed data in the "Master List" sheet starting from the next available row
+      masterListSheet.getRange(startRow,1, rangeToImport.length, rangeToImport[0].length).setValues(rangeToImport);
+      
+      // Update the starting row for the next import
+      startRow += rangeToImport.length;
+    }
+  }
+}
