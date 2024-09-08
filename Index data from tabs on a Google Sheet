@@ -1,12 +1,27 @@
 function createMasterList() {
   // Define the names of the tabs to import data from
   var sheetNamesToImport = [
-    "Sun 10a LWR", "Sun 10a SWR", "Sun 12:30p HB", "Sun 3p LWR", "Mon 6p HB", "Mon 6p LWR", "Mon 6p SWR",
+    "Sun 10a LWR", "Sun 10a SWR", "Sun 1230p LWR", "Sun 10a HB","Mon 6p HB", "Mon 6p LWR", "Mon 6p SWR",
     "Mon 8:30p LWR", "Mon 8:30p SWR", "Tue 10a SWR", "Tue 6p LWR", "Tue Interm. 6:30p SWR", "Tue 8:30p LWR",
-    "Tue 7p HB", "Wed 10a LWR", "Wed 12:30p LWR", "Wed 6p LWR", "Wed 8:30p LWR", "Wed 5:30p SWR", "Wed 8p SWR",
+    "Tue 6:30p HB", "Wed 10a LWR", "Wed 12:30p LWR", "Wed 6p LWR", "Wed 8:30p LWR", "Wed 8p INT SWR", "Wed 5:30p SWR", "Wed 8p SWR",
     "Wed HB Intensive 6pm", "Wed 6p Casting", "Thu 6p LWR", "Thu 8:30p LWR", "Thu 6p HB", "Thu Adv 6p SWR",
-    "Fri 12:30p LWR", "Fri 5:30p LWR", "Fri 8p LWR", "Fri 5:30p HB Inten.", "Fri 5:30p Casting", "Sat 10a LWR",
-    "Sat 12:30a LWR", "Sat 3p LWR","TEACHER SHELVES","Sat Teen 2:30p SWR", "Sat Kids 12p SWR", "Fri 5:30p HB Inten.","Community Artist Shelves"
+    "Fri 12:30p LWR", "Fri 5:30p LWR", "Fri 8p LWR", "Fri 5:30p HB Inten", "Fri 5:30p Casting", "Sat 10a LWR",
+    "Sat 12:30a LWR", "Sat 3p LWR","Teacher Shelves 1","Teacher Shelves 2","Community Artist Shelves", "SAT TEEN 10am swr","SAT TEEN 1230pm swr","Teacher Shelves 3", "SAT 10am HB FUND"
+  ];
+
+  // Define the range of shelf numbers to discontinue (only numbers, no "Shelf" prefix)
+  var discontinuedShelves = [
+    ["", "", "Discontinued", 274], // Column A and B are blank, "Discontinued" in column C, number in column D
+    ["", "", "Discontinued", 275],
+    ["", "", "Discontinued", 276],
+    ["", "", "Discontinued", 277],
+    ["", "", "Discontinued", 278],
+    ["", "", "Discontinued", 282],
+    ["", "", "Discontinued", 283],
+    ["", "", "Discontinued", 284],
+    ["", "", "Discontinued", 285],
+    ["", "", "Discontinued", 286]
+
   ];
 
   // Get the active spreadsheet
@@ -15,29 +30,44 @@ function createMasterList() {
   // Create the "Master List" tab or get it if it already exists
   var masterListSheet = spreadsheet.getSheetByName("Master List") || spreadsheet.insertSheet("Master List");
 
-  // Define the starting row to append data in the "Master List"
-  var startRow = masterListSheet.getLastRow() + 1;
+  // Clear the current contents of the master list before adding new data
+  masterListSheet.clear();
 
+  // Define the starting row to append data in the "Master List"
+  var startRow = 1;
+// **Change 1: Added a check to ensure the range is valid**
   // Loop through each tab to import data
   for (var i = 0; i < sheetNamesToImport.length; i++) {
     var sourceSheet = spreadsheet.getSheetByName(sheetNamesToImport[i]);
     if (sourceSheet) {
-      // Define the range to import (A4:D20)
+      // Define the range to import (A4:D19)
       var rangeToImport = sourceSheet.getRange("A4:D19").getValues();
-      
-      // Apply the INDEX function to the imported data
-      for (var row = 0; row < rangeToImport.length; row++) {
-        for (var col = 0; col < rangeToImport[row].length; col++) {
-          var indexFormula = "=INDEX('" + sheetNamesToImport[i] + "'!$A$4:$D$19," + (row + 1) + "," + (col + 1) + ")";
-          rangeToImport[row][col] = indexFormula;
+
+      // **Change 2: Added validation for rangeToImport**
+      // Ensure the range is valid and not empty
+      if (rangeToImport && rangeToImport.length > 0 && rangeToImport[0].length > 0) { // **This line is new**
+        // Apply the INDEX function to the imported data
+        for (var row = 0; row < rangeToImport.length; row++) {
+          for (var col = 0; col < rangeToImport[row].length; col++) {
+            var indexFormula = "=INDEX('" + sheetNamesToImport[i] + "'!$A$4:$D$19," + (row + 1) + "," + (col + 1) + ")";
+            rangeToImport[row][col] = indexFormula;
+          }
         }
-      }
-      
-      // Set the imported and indexed data in the "Master List" sheet starting from the next available row
-      masterListSheet.getRange(startRow,1, rangeToImport.length, rangeToImport[0].length).setValues(rangeToImport);
-      
-      // Update the starting row for the next import
-      startRow += rangeToImport.length;
+
+        // Set the imported and indexed data in the "Master List" sheet starting from the next available row
+        masterListSheet.getRange(startRow, 1, rangeToImport.length, rangeToImport[0].length).setValues(rangeToImport);
+
+        // Update the starting row for the next import
+        startRow += rangeToImport.length;
+      }  // **End of new validation block**
     }
   }
+
+  // Append the discontinued shelves at the end of the master list
+  if (discontinuedShelves.length > 0) {
+    masterListSheet.getRange(startRow, 1, discontinuedShelves.length, discontinuedShelves[0].length).setValues(discontinuedShelves);
+  }
 }
+
+//here is the excel formula for the free shelves =filter(sequence(max(D:D)-min(D:D)+1,1,min(D:D)),countif(D:D,sequence(max(D:D)-min(D:D)+1,1,min(D:D)))=0)
+
